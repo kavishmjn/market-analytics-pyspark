@@ -28,8 +28,8 @@ def add_core_metrics(df: DataFrame) -> DataFrame:
 	#∙	rolling_vwap — average of vwap_simple over last 7 candles
 
 def add_rolling_metrics(df: DataFrame) -> DataFrame:
-    window_20 = Window.orderBy("open_time").rowsBetween(-19,0)
-    window_7 = Window.orderBy("open_time").rowsBetween(-6,0)
+    window_20 = Window.partitionBy("symbol").orderBy("open_time").rowsBetween(-19,0)
+    window_7 = Window.partitionBy("symbol").orderBy("open_time").rowsBetween(-6,0)
     return (
         df.withColumn('rolling_avg_volume',avg(col('volume').cast('double')).over(window_20))
           .withColumn('rolling_volatility',stddev(col('returns')).over(window_20))
@@ -42,7 +42,7 @@ def add_rolling_metrics(df: DataFrame) -> DataFrame:
     #.	consecutive_green — was the previous candle also green? (close > open)
 
 def add_lag_metrics(df: DataFrame) -> DataFrame:
-    window = Window.orderBy("open_time")
+    window = Window.partitionBy("symbol").orderBy("open_time")
     return (
         df
         .withColumn('prev_close', lag(col('close'), 1).over(window))

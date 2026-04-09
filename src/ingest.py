@@ -1,10 +1,11 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col,lit,input_file_name,regexp_extract
 from pyspark.sql.types import (
     StructType, StructField,
     LongType, DoubleType
 )
 
-BINANCE_SCHEMA = StructType([
+FILE_SCHEMA = StructType([
     StructField("open_time",        LongType(),   False),
     StructField("open",             DoubleType(), False),
     StructField("high",             DoubleType(), False),
@@ -22,8 +23,9 @@ BINANCE_SCHEMA = StructType([
 def load_ohlcv(spark: SparkSession, path: str):
     df = spark.read.csv(
         path,
-        schema=BINANCE_SCHEMA,
+        schema=FILE_SCHEMA,
         header=False
     )
-    df = df.drop("ignore")
+    file_name = regexp_extract(input_file_name(), r"([A-Z]+)-1m-", 1)
+    df = df.drop("ignore").withColumn("symbol", file_name)  
     return df
