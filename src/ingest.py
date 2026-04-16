@@ -29,3 +29,4 @@ def load_ohlcv(spark: SparkSession, path: str):
     file_name = regexp_extract(input_file_name(), r"([A-Z]+)-1m-", 1)
     df = df.drop("ignore").withColumn("symbol", file_name)  
     return df
+
